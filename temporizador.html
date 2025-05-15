@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporizador</title>
+    <style>
+        :root {
+            --primary: #00ff9d;
+            --secondary: #00b8ff;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #e0e0e0;
+            --danger: #ff3860;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(0, 255, 157, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(0, 184, 255, 0.1) 0%, transparent 50%);
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background-color: rgba(18, 18, 18, 0.8);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 0%,
+                transparent 50%,
+                rgba(0, 255, 157, 0.1) 100%
+            );
+            transform: rotate(30deg);
+            z-index: -1;
+            animation: shine 6s infinite linear;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(30deg) translate(-10%, -10%); }
+            100% { transform: rotate(30deg) translate(10%, 10%); }
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+        }
+
+        .description {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--light);
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+
+        input {
+            background-color: var(--darker);
+            border: 1px solid rgba(0, 184, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--light);
+            font-size: 1.2rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #444;
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .error {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 1.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .controls button {
+            flex: 1;
+        }
+
+        .cancel-btn {
+            background: linear-gradient(135deg, #ff3860, #ff6b00);
+        }
+
+        .cyber-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid transparent;
+            border-image: linear-gradient(135deg, var(--primary), var(--secondary)) 1;
+            border-radius: 16px;
+            pointer-events: none;
+            animation: borderPulse 4s infinite linear;
+        }
+
+        @keyframes borderPulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 157, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 157, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: -1;
+            border-radius: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid-lines"></div>
+        <div class="cyber-border"></div>
+        <h1>Temporizador</h1>
+        <p class="description">Digite o tempo em segundos</p>
+        
+        <div class="input-group">
+            <label for="seconds">Tempo em segundos:</label>
+            <input type="number" id="seconds" min="1" value="10" placeholder="Digite o tempo em segundos">
+        </div>
+        
+        <button id="start-btn">Iniciar Temporizador</button>
+        
+        <div class="timer-display" id="timer">--</div>
+        
+        <div class="controls">
+            <button id="pause-btn" disabled>Pausar</button>
+            <button id="cancel-btn" class="cancel-btn" disabled>Cancelar</button>
+        </div>
+        
+        <div class="status" id="status">Pronto para iniciar</div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <!-- Áudios (tic-tac e tema de Missão Impossível) -->
+    <audio id="tick-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-clock-countdown-bleeps-916.mp3" preload="auto"></audio>
+    <audio id="mission-theme" preload="auto">
+        <source src="missao_impossivel.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const secondsInput = document.getElementById('seconds');
+            const startBtn = document.getElementById('start-btn');
+            const pauseBtn = document.getElementById('pause-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const timerDisplay = document.getElementById('timer');
+            const statusDisplay = document.getElementById('status');
+            const errorDisplay = document.getElementById('error');
+            const missionTheme = document.getElementById('mission-theme');
+            const tickSound = document.getElementById('tick-sound');
+            
+            let timer;
+            let timeLeft;
+            let isPaused = false;
+            let totalSeconds = 0;
+            
+            // Verifica se a API de síntese de voz está disponível
+            const speechSupported = 'speechSynthesis' in window;
+            if (!speechSupported) {
+                errorDisplay.textContent = 'Aviso: Seu navegador não suporta síntese de voz. A mensagem não será falada.';
+            }
+            
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', togglePause);
+            cancelBtn.addEventListener('click', cancelTimer);
+            
+            function startTimer() {
+                const seconds = parseInt(secondsInput.value);
+                
+                if (isNaN(seconds) || seconds <= 0) {
+                    errorDisplay.textContent = 'Por favor, digite um número válido maior que zero.';
+                    return;
+                }
+                
+                errorDisplay.textContent = '';
+                totalSeconds = seconds;
+                timeLeft = seconds;
+                isPaused = false;
+                
+                updateTimerDisplay();
+                statusDisplay.textContent = 'Temporizador em execução...';
+                
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                cancelBtn.disabled = false;
+                
+                // Reproduz a mensagem de voz IMEDIATAMENTE ao iniciar
+                speakMessage();
+                
+                // Inicia a contagem regressiva
+                timer = setInterval(() => {
+                    if (!isPaused) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                        
+                        // Toca o som de "tic-tac" a cada segundo
+                        if (timeLeft > 0) {
+                            tickSound.currentTime = 0;
+                            tickSound.play().catch(e => console.log("Erro ao reproduzir tic-tac:", e));
+                        }
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(timer);
+                            timerComplete();
+                        }
+                    }
+                }, 1000);
+            }
+            
+            function togglePause() {
+                isPaused = !isPaused;
+                pauseBtn.textContent = isPaused ? 'Continuar' : 'Pausar';
+                statusDisplay.textContent = isPaused ? 'Temporizador pausado' : 'Temporizador em execução...';
+                
+                if (isPaused) {
+                    tickSound.pause();
+                } else if (timeLeft > 0) {
+                    tickSound.currentTime = 0;
+                    tickSound.play().catch(e => console.log("Erro ao retomar tic-tac:", e));
+                }
+            }
+            
+            function cancelTimer() {
+                clearInterval(timer);
+                timerDisplay.textContent = '--';
+                statusDisplay.textContent = 'Temporizador cancelado';
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                cancelBtn.disabled = true;
+                isPaused = false;
+                
+                // Para os áudios
+                tickSound.pause();
+                tickSound.currentTime = 0;
+                missionTheme.pause();
+                missionTheme.currentTime = 0;
+                
+                // Cancela a mensagem de voz se estiver em andamento
+                if (speechSupported) {
+                    window.speechSynthesis.cancel();
+                }
+            }
+            
+            function updateTimerDisplay() {
+                timerDisplay.textContent = timeLeft.toString().padStart(2, '0');
+                
+                if (timeLeft <= 5) {
+                    timerDisplay.style.animation = 'none';
+                    void timerDisplay.offsetWidth;
+                    timerDisplay.style.animation = 'blink 0.5s infinite alternate';
+                    timerDisplay.style.color = 'var(--danger)';
+                } else {
+                    timerDisplay.style.animation = 'none';
+                    timerDisplay.style.color = 'var(--primary)';
+                }
+            }
+            
+            function timerComplete() {
+                timerDisplay.textContent = '00';
+                statusDisplay.textContent = 'Reproduzindo tema de Missão Impossível...';
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                cancelBtn.disabled = true;
+                
+                // Toca o tema musical APÓS a contagem
+                playMissionTheme();
+            }
+            
+            function speakMessage() {
+                if (!speechSupported) return;
+                
+                const message = `Esta mensagem se auto destruirá em ${totalSeconds} segundos`;
+                const utterance = new SpeechSynthesisUtterance(message);
+                
+                utterance.lang = 'pt-BR';
+                utterance.rate = 1.1;
+                utterance.pitch = 0.8;
+                
+                // Configura voz masculina (funciona melhor no Chrome)
+                const voices = window.speechSynthesis.getVoices();
+                const maleVoice = voices.find(voice => 
+                    voice.lang.includes('pt') && 
+                    (voice.name.includes('Google') || voice.name.includes('pt-BR'))
+                );
+                
+                if (maleVoice) {
+                    utterance.voice = maleVoice;
+                }
+                
+                window.speechSynthesis.speak(utterance);
+            }
+            
+            function playMissionTheme() {
+                missionTheme.play()
+                    .then(() => {
+                        statusDisplay.textContent = 'Missão concluída!';
+                    })
+                    .catch(e => {
+                        errorDisplay.textContent = 'Erro ao reproduzir o tema. Verifique o arquivo de áudio.';
+                        console.error('Erro no áudio:', e);
+                    });
+            }
+            
+            // Estilo para animação de piscar
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes blink {
+                    from { 
+                        opacity: 1; 
+                        text-shadow: 0 0 5px var(--danger);
+                    }
+                    to { 
+                        opacity: 0.7; 
+                        text-shadow: 0 0 20px var(--danger);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
